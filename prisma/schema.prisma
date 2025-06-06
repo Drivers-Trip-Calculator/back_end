@@ -15,48 +15,49 @@ datasource db {
 }
 
 // models
-
-model auth {
-  id       String @id @default(uuid())
-  email    String @unique
-  password String
-  users    User?
-}
-
 model User {
-  profileId String    @id @default(uuid())
+  id        String   @id @default(uuid())
   firstName String
   lastName  String
-  phone     Int?
-  user      auth      @relation(fields: [userId], references: [id])
-  userId    String    @unique
+  email     String   @unique
+  password  String
+  phone     String
+  status    Status   @default(Active)
+  isAdmin   Boolean  @default(false)
   routes    Route[]
-  pricing   Pricing[]
+  ledger    Ledger[]
 }
 
 model Route {
-  routeId    Int      @id @default(autoincrement())
-  date       DateTime @default(now()) @db.Date
+  companyId  String   @id @default(uuid())
+  name       String
   containers Int      @default(0)
   hours      Int      @default(0)
   miles      Int      @default(0)
   scans      Int      @default(0)
   stops      Int      @default(0)
-  business   Pricing  @relation(fields: [businessId], references: [companyId])
-  businessId String
-  driver     User     @relation(fields: [driverId], references: [userId])
-  driverId   String
+  creator    User     @relation(fields: [creatorId], references: [id])
+  creatorId  String
+  ledgers    Ledger[]
 }
 
-model Pricing {
-  companyId  String  @id @default(uuid())
-  name       String
-  containers Int     @default(0)
-  hours      Int     @default(0)
-  miles      Int     @default(0)
-  scans      Int     @default(0)
-  stops      Int     @default(0)
-  routes     Route[]
-  creator    User    @relation(fields: [creatorId], references: [userId])
-  creatorId  String
+model Ledger {
+  ledgerId   String   @id @default(uuid())
+  containers Int      @default(0)
+  hours      Int      @default(0)
+  miles      Int      @default(0)
+  scans      Int      @default(0)
+  stops      Int      @default(0)
+  total      Float
+  routes     Route    @relation(fields: [routeId], references: [companyId], onDelete: NoAction, onUpdate: NoAction)
+  routeId    String
+  driver     User     @relation(fields: [driverId], references: [id])
+  driverId   String
+  createdAt  DateTime @default(now()) @db.Date
+  updatedAt  DateTime @default(now()) @db.Date
+}
+
+enum Status {
+  Active
+  Disabled
 }
