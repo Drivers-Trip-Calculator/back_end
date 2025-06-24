@@ -20,11 +20,12 @@ model User {
   firstName String
   lastName  String
   email     String   @unique
-  password  String
+  password  String?
   phone     String
   status    Status   @default(Active)
   isAdmin   Boolean  @default(false)
   routes    Route[]
+  trips     Trip[]
   ledger    Ledger[]
 }
 
@@ -36,9 +37,30 @@ model Route {
   miles      Int      @default(0)
   scans      Int      @default(0)
   stops      Int      @default(0)
-  creator    User     @relation(fields: [creatorId], references: [id])
+  creator    User     @relation(fields: [creatorId], references: [email])
   creatorId  String
   ledgers    Ledger[]
+  trip       Trip[]
+  createdAt  DateTime @default(now()) @db.Date
+  updatedAt  DateTime @default(now()) @db.Date
+
+  @@unique([name, creatorId])
+}
+
+model Trip {
+  tripId     String   @id @default(uuid())
+  route      Route    @relation(fields: [routeId], references: [companyId])
+  routeId    String
+  containers Int      @default(0)
+  hours      Int      @default(0)
+  miles      Int      @default(0)
+  scans      Int      @default(0)
+  stops      Int      @default(0)
+  creator    User     @relation(fields: [creatorId], references: [email])
+  creatorId  String
+  ledgers    Ledger[]
+  createdAt  DateTime @default(now()) @db.Date
+  updatedAt  DateTime @default(now()) @db.Date
 }
 
 model Ledger {
@@ -51,6 +73,8 @@ model Ledger {
   total      Float
   routes     Route    @relation(fields: [routeId], references: [companyId], onDelete: NoAction, onUpdate: NoAction)
   routeId    String
+  trips      Trip     @relation(fields: [tripId], references: [tripId])
+  tripId     String
   driver     User     @relation(fields: [driverId], references: [id])
   driverId   String
   createdAt  DateTime @default(now()) @db.Date
